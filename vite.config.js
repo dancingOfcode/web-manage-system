@@ -30,7 +30,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: '10.111.48.16',
+    host: '192.168.1.159',
     port: 8080,
     open: true,
     cors: true, // 允许跨域。

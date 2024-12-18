@@ -44,11 +44,11 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach(async (to, from) => {
   // 检查用户是否已登录
-  let userInfo = localStorage.getItem('userInfo')
-  if (!userInfo && to.name !== 'login') {
-    // 将用户重定向到登录页面
-    return { name: 'login' }
-  }
+  // let userInfo = localStorage.getItem('userInfo')
+  // if (!userInfo && to.name !== 'login') {
+  //   // 将用户重定向到登录页面
+  //   return { name: 'login' }
+  // }
 })
 
 export default router
