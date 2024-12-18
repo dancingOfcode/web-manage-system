@@ -1,6 +1,6 @@
 # lisp_web_3d
 
-## 1.应用介绍：基于vue3 + vite + vue-router + pinia + three.js + tweenjs 实现的WEB3D可视化大屏基础架构。
+## 1.应用介绍：基于vue3 + vite + vue-router + pinia + tweenjs 实现的WEB3D后台管理系统。
 
 ## 2.技术栈：[vue3](https://cn.vuejs.org/) + [vite](http://www.webgl3d.cn/) + [vue-router](https://router.vuejs.org/zh/)+ [pinia](https://pinia.vuejs.org/zh/) + [threejs](hhttps://threejs.org/) + [tweenjs](https://createjs.com/tweenjs)
 
