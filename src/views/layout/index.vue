@@ -1,20 +1,26 @@
 <script setup>
+import { h, ref, reactive, onMounted } from 'vue'
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   DownOutlined,
   MailOutlined,
+  CloseOutlined,
+  MenuFoldOutlined,
+  FullscreenOutlined,
+  MenuUnfoldOutlined,
+  FullscreenExitOutlined,
 } from '@ant-design/icons-vue'
 import { signOut } from '@/api/api'
-import { h, ref, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useFullScreen } from '@/hooks'
 import { menuData } from '@/utils/constant'
+import { useRouter, useRoute } from 'vue-router'
 
 const username = ref('admin')
 const collapsed = ref(false)
 const router = useRouter()
 const route = useRoute()
 const menuItems = reactive([])
+const tagsData = ref([])
+const { isFullScreen, toggleFullScreen } = useFullScreen()
 const state = reactive({
   openKeys: [],
   selectedKeys: [],
@@ -26,10 +32,7 @@ onMounted(() => {
 })
 
 const onConfirm = async e => {
-  console.log(e);
-
   // const res = await signOut()
-  // message.success(res.data)
   router.replace('/login')
 }
 
@@ -58,6 +61,7 @@ const handleMenuData = data => {
   })
   // 默认展示第一个菜单url
   state.selectedKeys = [route.path.replace('/', '')]
+  handleTagsData(route.name, route.path)
 }
 
 const onOpenChange = openKeys => {
@@ -68,13 +72,21 @@ const onOpenChange = openKeys => {
     state.openKeys = latestOpenKey ? [latestOpenKey] : []
   }
   // 处理跳转
-  setTimeout(() => {
-    if (openKeys.length) {
-      let selectMenu = menuData.filter(v => v.key == openKeys[0])[0]['child'][0]
-      state.selectedKeys = [selectMenu.key]
-      router.push(selectMenu.path)
+  if (openKeys.length) {
+    let { selectedKeys } = state
+    let selectInfo = menuData.filter(v => v.key == openKeys[0])
+    let selectMenu = selectInfo[0]['child'][0]
+    // 判断当前菜单是否有子菜单被选中
+    if (selectInfo.length && state.selectedKeys.length) {
+      let isSelected = selectInfo[0]['child'].filter(
+        v => v.key === selectedKeys[0]
+      )
+      if (isSelected?.length) return
     }
-  })
+    state.selectedKeys = [selectMenu.key]
+    router.push(selectMenu.path)
+    handleTagsData(selectMenu.name, selectMenu.path)
+  }
 }
 
 const onClick = menuInfo => {
@@ -82,12 +94,36 @@ const onClick = menuInfo => {
   if (item.path) router.push(item.path)
   // 点击主页收起其他菜单
   if (key === 'home') state.openKeys = []
+  // 处理tags标签
+  handleTagsData(item.originItemValue.label, item.path)
 }
 
-// 关闭 tags
-const closeTags = e => {
-  console.log(e);
-};
+// 处理tags数据
+const handleTagsData = (selectLabel, path) => {
+  let isExit = false
+  tagsData.value.forEach(v => v.label === selectLabel && (isExit = true))
+  if (!isExit) {
+    tagsData.value = [...tagsData.value, { label: selectLabel, path }]
+  }
+}
+
+// 关闭菜单
+const closeTag = (index, path) => {
+  tagsData.value.splice(index, 1)
+  // 若当前关闭为选中  则选中最后一个
+  if (`/${state.selectedKeys}` === path) {
+    router.push(tagsData.value[tagsData.value.length - 1]['path'])
+    state.selectedKeys = [
+      tagsData.value[tagsData.value.length - 1]['path'].replace('/', ''),
+    ]
+  }
+}
+
+// tans选中
+const tagItemClick = path => {
+  router.push(path)
+  state.selectedKeys = [path.replace('/', '')]
+}
 </script>
 
 <template>
@@ -98,16 +134,32 @@ const closeTags = e => {
           <img src="@/assets/images/logo.png" style="height: 30px" />
           <span class="title" v-if="!collapsed">智慧看板管理系统</span>
         </div>
-        <a-menu mode="inline" theme="dark" :items="menuItems" style="width: 100%" :open-keys="state.openKeys"
-          :inline-collapsed="state.collapsed" v-model:selectedKeys="state.selectedKeys" @openChange="onOpenChange"
-          @select="onClick"></a-menu>
+        <a-menu
+          mode="inline"
+          theme="dark"
+          :items="menuItems"
+          style="width: 100%"
+          :open-keys="state.openKeys"
+          :inline-collapsed="state.collapsed"
+          v-model:selectedKeys="state.selectedKeys"
+          @openChange="onOpenChange"
+          @select="onClick"
+        ></a-menu>
       </a-layout-sider>
     </div>
     <a-layout class="right-wrap">
       <a-layout-header class="top-header" style="background: #fff; padding: 0">
         <!-- 菜单折叠 -->
-        <menu-unfold-outlined v-if="collapsed" class="trigger" @click="() => (collapsed = !collapsed)" />
-        <menu-fold-outlined v-else class="trigger" @click="() => (collapsed = !collapsed)" />
+        <menu-unfold-outlined
+          v-if="collapsed"
+          class="trigger"
+          @click="() => (collapsed = !collapsed)"
+        />
+        <menu-fold-outlined
+          v-else
+          class="trigger"
+          @click="() => (collapsed = !collapsed)"
+        />
         <!-- 登录 -->
         <div class="avatar-wrap">
           <img class="avatar" src="@/assets/images/avatar.png" />
@@ -125,8 +177,38 @@ const closeTags = e => {
         </div>
       </a-layout-header>
       <div class="nav-tags">
-        <div class="tag-item">Tag 1</div>
-        <div class="tag-item">tag2</div>
+        <div class="tags">
+          <div
+            :key="item.label"
+            class="tag-item"
+            v-for="(item, index) in tagsData"
+            :class="
+              '/' + state.selectedKeys[0] === item.path ? 'tag-active' : ''
+            "
+          >
+            <div class="txt" @click="tagItemClick(item.path)">
+              {{ item.label }}
+            </div>
+            <CloseOutlined
+              title="关闭"
+              class="close-btn"
+              v-if="tagsData.length > 1"
+              @click="closeTag(index, item.path)"
+            />
+          </div>
+        </div>
+        <div class="screen-btn-wrap" @click="toggleFullScreen">
+          <FullscreenOutlined
+            title="全屏"
+            class="screen-btn"
+            v-if="!isFullScreen"
+          />
+          <FullscreenExitOutlined
+            title="退出全屏"
+            class="screen-btn"
+            v-if="isFullScreen"
+          />
+        </div>
       </div>
       <a-layout-content class="content">
         <!-- 二级路由出口 -->
@@ -210,23 +292,48 @@ const closeTags = e => {
 
   .nav-tags {
     display: flex;
-    height: vh(55);
-    padding: vh(4) vw(24);
+    height: vh(48);
     background: #fff;
+    padding: vh(4) vw(16);
+    justify-content: space-between;
     border-top: 1px solid #e5e7eb;
 
-    .tag-item {
+    .tags {
       display: flex;
-      height: 100%;
-      color: #006be6;
-      padding: 0 vw(5);
-      min-width: vw(120);
-      margin-right: vw(5);
+
+      .tag-item {
+        display: flex;
+        height: 100%;
+        cursor: pointer;
+        color: #006be6;
+        padding: 0 vw(16);
+        min-width: vw(120);
+        margin-right: vw(5);
+        align-items: center;
+        border-radius: 5px;
+        justify-content: space-around;
+        border: 1px solid #e4e4e7;
+
+        &.tag-active {
+          background: #d9e9fb;
+        }
+
+        .close-btn {
+          margin-left: vw(12);
+          &:hover {
+            color: #fff;
+          }
+        }
+      }
+    }
+
+    .screen-btn-wrap {
+      display: flex;
       align-items: center;
-      border-radius: 5px;
-      justify-content: center;
-      background: #d9e9fb;
-      border: 1px solid #e4e4e7;
+      .screen-btn {
+        cursor: pointer;
+        font-size: vw(32);
+      }
     }
   }
 
