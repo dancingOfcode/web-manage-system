@@ -2,7 +2,6 @@
 import { h, ref, reactive, onMounted } from 'vue'
 import {
   DownOutlined,
-  MailOutlined,
   CloseOutlined,
   MenuFoldOutlined,
   FullscreenOutlined,
@@ -53,15 +52,21 @@ const handleMenuData = data => {
       item.name,
       item.key,
       item.path,
-      () => h(MailOutlined),
+      () => h(item.icon),
       item.child
         ? item.child.map(item => getItem(item.name, item.key, item.path))
         : null
     )
   })
   // 默认展示第一个菜单url
-  state.selectedKeys = [route.path.replace('/', '')]
-  handleTagsData(route.name, route.path)
+  if (route.name === 'layout')
+    if (route.name === 'layout') {
+      handleTagsData('首页', '/home')
+      state.selectedKeys = ['home']
+    } else {
+      handleTagsData(route.name, route.path)
+      state.selectedKeys = [route.path.replace('/', '')]
+    }
 }
 
 const onOpenChange = openKeys => {
@@ -134,32 +139,16 @@ const tagItemClick = path => {
           <img src="@/assets/images/logo.png" style="height: 30px" />
           <span class="title" v-if="!collapsed">智慧看板管理系统</span>
         </div>
-        <a-menu
-          mode="inline"
-          theme="dark"
-          :items="menuItems"
-          style="width: 100%"
-          :open-keys="state.openKeys"
-          :inline-collapsed="state.collapsed"
-          v-model:selectedKeys="state.selectedKeys"
-          @openChange="onOpenChange"
-          @select="onClick"
-        ></a-menu>
+        <a-menu mode="inline" theme="dark" :items="menuItems" style="width: 100%" :open-keys="state.openKeys"
+          :inline-collapsed="state.collapsed" v-model:selectedKeys="state.selectedKeys" @openChange="onOpenChange"
+          @select="onClick"></a-menu>
       </a-layout-sider>
     </div>
     <a-layout class="right-wrap">
       <a-layout-header class="top-header" style="background: #fff; padding: 0">
         <!-- 菜单折叠 -->
-        <menu-unfold-outlined
-          v-if="collapsed"
-          class="trigger"
-          @click="() => (collapsed = !collapsed)"
-        />
-        <menu-fold-outlined
-          v-else
-          class="trigger"
-          @click="() => (collapsed = !collapsed)"
-        />
+        <menu-unfold-outlined v-if="collapsed" class="trigger" @click="() => (collapsed = !collapsed)" />
+        <menu-fold-outlined v-else class="trigger" @click="() => (collapsed = !collapsed)" />
         <!-- 登录 -->
         <div class="avatar-wrap">
           <img class="avatar" src="@/assets/images/avatar.png" />
@@ -178,36 +167,18 @@ const tagItemClick = path => {
       </a-layout-header>
       <div class="nav-tags">
         <div class="tags">
-          <div
-            :key="item.label"
-            class="tag-item"
-            v-for="(item, index) in tagsData"
-            :class="
-              '/' + state.selectedKeys[0] === item.path ? 'tag-active' : ''
-            "
-          >
+          <div :key="item.label" class="tag-item" v-for="(item, index) in tagsData" :class="'/' + state.selectedKeys[0] === item.path ? 'tag-active' : ''
+            ">
             <div class="txt" @click="tagItemClick(item.path)">
               {{ item.label }}
             </div>
-            <CloseOutlined
-              title="关闭"
-              class="close-btn"
-              v-if="tagsData.length > 1"
-              @click="closeTag(index, item.path)"
-            />
+            <CloseOutlined title="关闭" class="close-btn" v-if="tagsData.length > 1"
+              @click="closeTag(index, item.path)" />
           </div>
         </div>
         <div class="screen-btn-wrap" @click="toggleFullScreen">
-          <FullscreenOutlined
-            title="全屏"
-            class="screen-btn"
-            v-if="!isFullScreen"
-          />
-          <FullscreenExitOutlined
-            title="退出全屏"
-            class="screen-btn"
-            v-if="isFullScreen"
-          />
+          <FullscreenOutlined title="全屏" class="screen-btn" v-if="!isFullScreen" />
+          <FullscreenExitOutlined title="退出全屏" class="screen-btn" v-if="isFullScreen" />
         </div>
       </div>
       <a-layout-content class="content">
@@ -320,6 +291,7 @@ const tagItemClick = path => {
 
         .close-btn {
           margin-left: vw(12);
+
           &:hover {
             color: #fff;
           }
@@ -330,6 +302,7 @@ const tagItemClick = path => {
     .screen-btn-wrap {
       display: flex;
       align-items: center;
+
       .screen-btn {
         cursor: pointer;
         font-size: vw(32);

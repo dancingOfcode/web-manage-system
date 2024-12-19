@@ -67,67 +67,44 @@ const onFinish = async values => {
       <object class="svg animate-float" :data="loginSvg" type="image/svg+xml">
         当前浏览器不支持 SVG！请使用最新版本谷歌浏览器打开。
       </object>
-      <div class="text">26号厂房指挥中心</div>
+      <div class="text">智慧看板管理系统</div>
     </div>
     <div class="login-form">
       <div class="title">账号登录</div>
-      <a-form
-        class="form-wrap"
-        :model="formState"
-        autocomplete="off"
-        @finish="onFinish"
-      >
-        <a-form-item
-          name="username"
-          :rules="[
-            {
-              required: true,
-              message: '请输入账号！',
-            },
-            {
-              pattern: accountReg,
-              message:
-                '账号格式错误，支持4到16位，由（字母，数字，下划线，减号）组成 。',
-            },
-          ]"
-        >
-          <a-input
-            class="form-item"
-            placeholder="账号"
-            v-model:value="formState.username"
-          />
+      <a-form class="form-wrap" :model="formState" autocomplete="off" @finish="onFinish">
+        <a-form-item name="username" :rules="[
+          {
+            required: true,
+            message: '请输入账号！',
+          },
+          {
+            pattern: accountReg,
+            message:
+              '账号格式错误，支持4到16位，由（字母，数字，下划线，减号）组成 。',
+          },
+        ]">
+          <a-input class="form-item" placeholder="账号" v-model:value="formState.username" />
         </a-form-item>
 
-        <a-form-item
-          name="password"
-          :rules="[
-            {
-              required: true,
-              message: '请输入密码！',
-            },
-            {
-              pattern: passwordReg,
-              message: '密码格式错误',
-            },
-          ]"
-        >
-          <a-input-password
-            class="form-item"
-            placeholder="密码"
-            v-model:value="formState.password"
-          />
+        <a-form-item name="password" :rules="[
+          {
+            required: true,
+            message: '请输入密码！',
+          },
+          {
+            pattern: passwordReg,
+            message: '密码格式错误',
+          },
+        ]">
+          <a-input-password class="form-item" placeholder="密码" v-model:value="formState.password" />
         </a-form-item>
 
         <a-form-item name="remember">
-          <a-checkbox class="remember" v-model:checked="formState.remember"
-            >记住我</a-checkbox
-          >
+          <a-checkbox class="remember" v-model:checked="formState.remember">记住我</a-checkbox>
         </a-form-item>
 
         <a-form-item>
-          <a-button class="form-item button" html-type="submit" type="primary"
-            >登录</a-button
-          >
+          <a-button class="form-item button" html-type="submit" type="primary">登录</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -151,9 +128,11 @@ const onFinish = async values => {
     position: absolute;
     top: vw(24);
     left: vw(24);
+
     img {
       width: vw(100);
     }
+
     .title {
       font-size: vw(26);
       margin-left: vw(24);
@@ -202,12 +181,15 @@ const onFinish = async values => {
 
     .form-wrap {
       width: 75%;
+
       .form-item {
         height: vh(52);
       }
+
       .remember {
         color: #1677ff;
       }
+
       .button {
         width: 100%;
         font-size: vw(22);
@@ -217,19 +199,28 @@ const onFinish = async values => {
 
   @keyframes float {
     0% {
-      transform: translateY(0); /* 动画开始时元素在原位置 */
+      transform: translateY(0);
+      /* 动画开始时元素在原位置 */
     }
+
     25% {
-      transform: translateY(-15px); /* 动画中间时元素向上移动 */
+      transform: translateY(-15px);
+      /* 动画中间时元素向上移动 */
     }
+
     50% {
-      transform: translateY(0px); /* 动画中间时元素向上移动 */
+      transform: translateY(0px);
+      /* 动画中间时元素向上移动 */
     }
+
     75% {
-      transform: translateY(15px); /* 动画中间时元素向上移动 */
+      transform: translateY(15px);
+      /* 动画中间时元素向上移动 */
     }
+
     100% {
-      transform: translateY(0px); /* 动画结束时元素向下移动 */
+      transform: translateY(0px);
+      /* 动画结束时元素向下移动 */
     }
   }
 

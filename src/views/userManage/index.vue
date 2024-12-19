@@ -1,11 +1,21 @@
 <script setup>
-import { ref, createVNode } from 'vue'
+import { reactive, ref, toRaw, createVNode } from 'vue';
 import { message, Modal } from 'ant-design-vue'
 import SearchForm from '@/components/searchForm.vue'
-import { userSearchParams } from '@/utils/constant'
+import { userSearchParams, btnTextMap } from '@/utils/constant'
+import RightDrawer from '@/components/rightDrawer.vue'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
+const openType = ref('')
+const drawerRef = ref()
 const selectedData = ref([])
+const formRef = ref();
+const labelCol = {
+  span: 5,
+};
+const wrapperCol = {
+  span: 13,
+};
 const rowSelection = ref({
   checkStrictly: false,
   onChange: (selectedRowKeys, selectedRows) => {
@@ -21,7 +31,14 @@ const rowSelection = ref({
 
 // 新增
 const handleAdd = () => {
-  console.log('add')
+  openType.value = 'add'
+  drawerRef.value.showDrawer()
+}
+
+// 编辑 itemEdit
+const itemEdit = () => {
+  openType.value = 'edit'
+  drawerRef.value.showDrawer()
 }
 
 // 删除
@@ -135,32 +152,99 @@ const tableData = [
     orgCodeTxt: '第十三事业部',
   },
 ]
+
+const formState = reactive({
+  workNo: '',
+  phone: '',
+  sex: undefined,
+  status: undefined,
+  orgCode: undefined,
+  realname: undefined,
+});
+
+const rules = {
+  workNo: [
+    {
+      required: true,
+      message: '请输入工号',
+      trigger: 'change',
+    },
+  ],
+  realname: [
+    {
+      required: true,
+      message: '请输入姓名',
+      trigger: 'change',
+    },
+    {
+      min: 3,
+      max: 5,
+      message: '长度3~5之间',
+      trigger: 'blur',
+    },
+  ],
+};
+
+const onSubmit = () => {
+  formRef.value
+    .validate()
+    .then(() => {
+      console.log('values', formState, toRaw(formState));
+    })
+    .catch(error => {
+      console.log('error', error);
+    });
+};
 </script>
 
 <template>
   <div class="user_manage">
-    <SearchForm
-      :showDelete="true"
-      @onAdd="handleAdd"
-      @onDelete="handleDelete"
-      @onSearch="handleSearch"
-      :searchParams="userSearchParams"
-    />
-    <a-table
-      class="cus-table"
-      :columns="columns"
-      :data-source="tableData"
-      :row-selection="rowSelection"
-      :scroll="{ x: 1300, y: 1000 }"
-    >
+    <SearchForm :showDelete="true" @onAdd="handleAdd" @onDelete="handleDelete" @onSearch="handleSearch"
+      :searchParams="userSearchParams" />
+    <a-table class="cus-table" :columns="columns" :data-source="tableData" :row-selection="rowSelection"
+      :scroll="{ x: 1300, y: 1000 }">
       <template #bodyCell="{ column, record }">
         <div class="btn-wrap" v-if="column.key === 'operation'">
-          <a-button type="primary" class="btn">编辑</a-button>
+          <a-button type="primary" class="btn" @click="itemEdit">编辑</a-button>
           <a-button type="primary" @click="itemDelete(record)">删除</a-button>
         </div>
       </template>
     </a-table>
   </div>
+  <RightDrawer ref="drawerRef" :title="(`${btnTextMap[openType]}用户`)">
+    <template v-slot:content>
+      <a-form ref="formRef" :model="formState" :rules="rules" :label-col="labelCol" :wrapper-col="wrapperCol">
+        <a-form-item ref="name" label="工号" name="workNo">
+          <a-input v-model:value="formState.workNo" />
+        </a-form-item>
+        <a-form-item ref="name" label="姓名" name="realname">
+          <a-input v-model:value="formState.realname" />
+        </a-form-item>
+        <a-form-item ref="name" label="手机号" name="phone">
+          <a-input v-model:value="formState.phone" />
+        </a-form-item>
+        <a-form-item ref="name" label="部门" name="orgCode">
+          <a-input v-model:value="formState.orgCode" />
+        </a-form-item>
+        <a-form-item label="性别" name="sex">
+          <a-select v-model:value="formState.sex" placeholder="请选择性别">
+            <a-select-option value="1">男</a-select-option>
+            <a-select-option value="2">女</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="状态" name="status">
+          <a-select v-model:value="formState.status" placeholder="请选择状态">
+            <a-select-option value="1">正常</a-select-option>
+            <a-select-option value="2">冻结</a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+    </template>
+    <template v-slot:footer>
+      <a-button style="margin-right:12px" @click="drawerRef.closeDrawer()">取消</a-button>
+      <a-button type="primary" @click="onSubmit">确定</a-button>
+    </template>
+  </RightDrawer>
 </template>
 
 <style lang="scss" scoped>
@@ -170,6 +254,7 @@ const tableData = [
 
 .btn-wrap {
   display: flex;
+
   .btn {
     margin-right: vw(12);
   }

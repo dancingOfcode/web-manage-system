@@ -1,3 +1,4 @@
+import { HomeOutlined, SettingOutlined } from '@ant-design/icons-vue'
 /*
  *@accountReg  账号正则
  */
@@ -14,10 +15,12 @@ export const menuData = [
         name: "首页",
         key: "home",
         path: `/home`,
+        icon: HomeOutlined
     },
     {
         name: "系统管理",
         key: "system",
+        icon: SettingOutlined,
         child: [
             {
                 name: "用户管理",
@@ -111,3 +114,10 @@ export const menuSearchParams = [
         isRequired: false
     },
 ]
+
+// 弹窗类型
+export const btnTextMap = {
+    add: '新增',
+    edit: '编辑',
+    auth: '授权'
+}
